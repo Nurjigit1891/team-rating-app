@@ -7,7 +7,7 @@ import Layout from './pages/layout/Layout.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/team-rating-app/">
       <Layout />
     </BrowserRouter>
   </React.StrictMode>,
