@@ -1,13 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../../firebase';
+
 const CATEGORIES = [
   { en: 'Defending', ru: 'Защита', key: 'defending' },
   { en: 'Attack', ru: 'Атака', key: 'attack' },
   { en: 'Dribbling', ru: 'Дриблинг', key: 'dribbling' },
   { en: 'Speed', ru: 'Скорость', key: 'speed' },
   { en: 'Passing', ru: 'Пас', key: 'passing' },
-  { en: 'Physical', ru: 'Физика', key: 'physical' }
+  { en: 'Physical', ru: 'Физика', key: 'physical' },
+  { en: 'Finishing', ru: 'Завершение', key: 'finishing' },
+  { en: 'Vision', ru: 'Видение поля', key: 'vision' },
+  { en: 'Positioning', ru: 'Позиционирование', key: 'positioning' },
+  { en: 'Ball Control', ru: 'Контроль мяча', key: 'ballcontrol' },
+  { en: 'Technique', ru: 'Техника', key: 'technique' },
+  { en: 'Stamina', ru: 'Выносливость', key: 'stamina' },
+  { en: 'Aggression', ru: 'Агрессия', key: 'aggression' },
+  { en: 'Leadership', ru: 'Лидерство', key: 'leadership' },
+  { en: 'Teamwork', ru: 'Командная игра', key: 'teamwork' },
+  { en: 'Composure', ru: 'Хладнокровие', key: 'composure' },
+  { en: 'Work Rate', ru: 'Работоспособность', key: 'workrate' },
+  { en: 'Long Shots', ru: 'Дальние удары', key: 'longshots' },
+  { en: 'Headers', ru: 'Игра головой', key: 'headers' },
+  { en: 'Free Kicks', ru: 'Штрафные удары', key: 'freekicks' },
+  { en: 'Penalties', ru: 'Пенальти', key: 'penalties' },
 ];
 
 const PLAYERS = [
