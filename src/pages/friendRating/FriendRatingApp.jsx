@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import bekaPhoto from '../../assets/beka.jpg'
-import islamPhoto from '../assets/russkiy.jpg'
-import nursiPhoto from '../assets/nursi.jpg'
-import nurbaPhoto from '../assets/nurba.png'
-import nurdanPhoto from '../assets/nurdan.jpg'
+import islamPhoto from '../../assets/russkiy.jpg'
+import nursiPhoto from '../../assets/nursi.jpg'
+import nurbaPhoto from '../../assets/nurba.png'
+import nurdanPhoto from '../../assets/nurdan.jpg'
 
 
 
