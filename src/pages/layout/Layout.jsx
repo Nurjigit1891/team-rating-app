@@ -11,7 +11,7 @@ const Layout = () => {
     <div>
       <Routes>
         <Route path='/' element={<App />}/>
-        <Route path='/friends' elem  ent={<FriendRatingApp />} />
+        <Route path='/friends' element={<FriendRatingApp />} />
         <Route path='/admin123' element={<AdminDashboard />}/>
         <Route path='/admin-friends' element={<AdminDashboardFriends />} />
         <Route path='/cards' element={<PlayerCardsView />}/>
