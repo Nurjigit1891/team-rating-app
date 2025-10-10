@@ -2,7 +2,7 @@ import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 import App from '../../App'
 import AdminDashboard from '../adminDashboard/AdminDashboard'
-import FriendRatingApp from '../../friendRating/FriendRatingApp'
+import FriendRatingApp from '../friendRating/FriendRatingApp'
 
 const Layout = () => {
   return (

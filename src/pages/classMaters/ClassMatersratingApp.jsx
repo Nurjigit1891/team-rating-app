@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../../firebase';
+import { db } from '../../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import bekaPhoto from '../assets/beka.jpg'
 import islamPhoto from '../assets/russkiy.jpg'
@@ -42,7 +42,7 @@ const PLAYERS = [
 
 ];
 
-export default function FriendRatingApp() {
+export default function ClassMatersratingApp() {
   const [stage, setStage] = useState('welcome');
   const [userName, setUserName] = useState('');
   const [currentCategory, setCurrentCategory] = useState(0);

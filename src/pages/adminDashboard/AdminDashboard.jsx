@@ -11,30 +11,12 @@ const CATEGORIES = [
 ];
 
 const PLAYERS = [
-  { id: 1, name: 'Bakai' },
-  { id: 2, name: 'Markus' },
-  { id: 3, name: 'Brinjar' },
-  { id: 4, name: 'Tima' },
-  { id: 5, name: 'Aidar' },
-  { id: 6, name: 'Rus' },
-  { id: 7, name: 'Usuf' },
-  { id: 8, name: 'Tilegen' },
-  { id: 9, name: 'Arsen' },
-  { id: 10, name: 'Islam' },
-  { id: 11, name: 'Chika' },
-  { id: 12, name: 'Myrza' },
-  { id: 13, name: 'Mirs' },
-  { id: 14, name: 'Nurba' },
-  { id: 15, name: 'Shifu' },
-  { id: 16, name: 'Aliba' },
-  { id: 17, name: 'Aza' },
-  { id: 18, name: 'Noa' },
-  { id: 19, name: 'Emil' },
-  { id: 20, name: 'Suli' },
-  { id: 21, name: 'Farhat' },
-  { id: 22, name: 'Yasir' },
-  { id: 23, name: 'Kana' },
-  { id: 24, name: 'Emir' },
+  { id: 1, name: 'Beksultan' },
+  { id: 2, name: 'Islam' },
+  { id: 3, name: 'Nurdan' },
+  { id: 4, name: 'Nursultan' },
+  { id: 5, name: 'Nurzhigit' },
+ 
 ];
 
 export default function AdminDashboard() {
