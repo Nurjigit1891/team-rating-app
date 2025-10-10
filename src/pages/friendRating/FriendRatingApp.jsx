@@ -34,16 +34,11 @@ const CATEGORIES = [
 ];
 
 const PLAYERS = [
-  {id: 1, name: "Нурис", photo: bekaPhoto},
-  {id: 2, name: "Айдар", photo: islamPhoto},
-  {id: 3, name: "Омка", photo: nurdanPhoto},
-  {id: 4, name: "Адил", photo: nursiPhoto},
+  {id: 1, name: "Бексултан", photo: bekaPhoto},
+  {id: 2, name: "Ислам", photo: islamPhoto},
+  {id: 3, name: "Нурдан", photo: nurdanPhoto},
+  {id: 4, name: "Нурсултан", photo: nursiPhoto},
   {id: 5, name: "Нуржигит", photo: nurbaPhoto},
-  {id: 6, name: "Атай", photo: nurbaPhoto},
-  {id: 7, name: "Азамат", photo: nurbaPhoto},
-  {id: 8, name: "Айбек", photo: nurbaPhoto},
-  {id: 9, name: "Биймырза", photo: nurbaPhoto},
-  {id: 10, name: "Эламан", photo: nurbaPhoto},
 
 ];
 
