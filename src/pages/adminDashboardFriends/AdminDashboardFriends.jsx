@@ -24,6 +24,7 @@ const CATEGORIES = [
   { en: 'Headers', ru: 'Игра головой', key: 'headers' },
   { en: 'Free Kicks', ru: 'Штрафные удары', key: 'freekicks' },
   { en: 'Penalties', ru: 'Пенальти', key: 'penalties' },
+  { en: 'GaolKeeping', ru: 'Навыки вратаря', key: 'goalkeeping' },
 ];
 
 const PLAYERS = [
@@ -48,7 +49,7 @@ export default function AdminDashboardFriends() {
   const fetchAllRatings = async () => {
     try {
       setLoading(true);
-      const q = query(collection(db, 'team-ratings'), orderBy('timestamp', 'desc'));
+      const q = query(collection(db, 'teamRatings2'), orderBy('timestamp', 'desc'));
       const querySnapshot = await getDocs(q);
       
       const ratings = [];

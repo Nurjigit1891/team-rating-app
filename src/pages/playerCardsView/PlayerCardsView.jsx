@@ -24,6 +24,7 @@ const CATEGORIES = [
   { en: 'Headers', ru: 'Игра головой', key: 'headers' },
   { en: 'Free Kicks', ru: 'Штрафные удары', key: 'freekicks' },
   { en: 'Penalties', ru: 'Пенальти', key: 'penalties' },
+  { en: 'GoalKeeping', ru: 'Навыки вратаря', key: 'goalkeeping' },
 ];
 
 const PLAYERS = [
@@ -35,7 +36,8 @@ const PLAYERS = [
 ];
 
 export default function PlayerCardsView() {
-  const [allRatings, setAllRatings] = useState([]);
+  const [oldRatings, setOldRatings] = useState([]);
+  const [newRatings, setNewRatings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,15 +47,20 @@ export default function PlayerCardsView() {
   const fetchAllRatings = async () => {
     try {
       setLoading(true);
-      const q = query(collection(db, 'team-ratings'), orderBy('timestamp', 'desc'));
-      const querySnapshot = await getDocs(q);
-      
-      const ratings = [];
-      querySnapshot.forEach((doc) => {
-        ratings.push({ id: doc.id, ...doc.data() });
-      });
-      
-      setAllRatings(ratings);
+      // старая коллекция = 'team-rating', новая = 'teamRating2'
+      const oldQ = query(collection(db, 'team-ratings'), orderBy('timestamp', 'desc'));
+      const newQ = query(collection(db, 'teamRatings2'), orderBy('timestamp', 'desc'));
+
+      const [oldSnap, newSnap] = await Promise.all([getDocs(oldQ), getDocs(newQ)]);
+
+      const oldData = [];
+      oldSnap.forEach((doc) => oldData.push({ id: doc.id, ...doc.data() }));
+
+      const newData = [];
+      newSnap.forEach((doc) => newData.push({ id: doc.id, ...doc.data() }));
+
+      setOldRatings(oldData);
+      setNewRatings(newData);
     } catch (error) {
       console.error('Ошибка загрузки данных:', error);
     } finally {
@@ -61,31 +68,43 @@ export default function PlayerCardsView() {
     }
   };
 
-  const calculatePlayerAverages = (playerId) => {
-    const playerAverages = {};
-    
-    CATEGORIES.forEach(cat => {
-      const categoryRatings = allRatings.filter(r => r.category === cat.key);
-      const ratings = categoryRatings
-        .map(r => r.ratings?.[playerId])
-        .filter(r => r !== undefined);
-      
-      if (ratings.length > 0) {
-        const sum = ratings.reduce((acc, val) => acc + val, 0);
-        playerAverages[cat.key] = (sum / ratings.length).toFixed(1);
-      } else {
-        playerAverages[cat.key] = 0;
-      }
-    });
-    
-    return playerAverages;
+  const toNumberIfPossible = (v) => {
+    if (v === undefined || v === null) return NaN;
+    if (typeof v === 'number') return v;
+    const parsed = parseFloat(v);
+    return Number.isNaN(parsed) ? NaN : parsed;
   };
 
-  const calculateOverallRating = (averages) => {
-    const values = Object.values(averages).filter(v => v > 0);
-    if (values.length === 0) return 0;
-    const sum = values.reduce((acc, val) => acc + parseFloat(val), 0);
-    return (sum / values.length).toFixed(1);
+  const calculatePlayerAverages = (data, playerId) => {
+    const averages = {};
+    CATEGORIES.forEach(cat => {
+      const categoryRatings = data.filter(r => r.category === cat.key);
+      const values = categoryRatings
+        .map(r => toNumberIfPossible(r.ratings?.[playerId]))
+        .filter(v => !Number.isNaN(v));
+      if (values.length > 0) {
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        averages[cat.key] = +(sum / values.length).toFixed(1);
+      } else {
+        averages[cat.key] = 0;
+      }
+    });
+    return averages;
+  };
+
+  const calculateOverall = (averages) => {
+    const vals = Object.values(averages).filter(v => v > 0);
+    if (!vals.length) return 0;
+    const sum = vals.reduce((a, b) => a + parseFloat(b), 0);
+    return +(sum / vals.length).toFixed(1);
+  };
+
+  const calcDiff = (newVal, oldVal) => {
+    if (Number.isNaN(newVal) || Number.isNaN(oldVal)) return null;
+    if (newVal === 0 && oldVal === 0) return null;
+    const diff = +(newVal - oldVal).toFixed(1);
+    if (diff === 0) return null;
+    return diff;
   };
 
   if (loading) {
@@ -107,49 +126,100 @@ export default function PlayerCardsView() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 text-center">
           <h1 className="text-5xl font-bold text-white mb-2">⚽ Карточки Игроков</h1>
-          <p className="text-purple-200 text-lg">FIFA Ultimate Team Style</p>
+          <p className="text-purple-200 text-lg">Сравнение изменений рейтингов</p>
+          <div className="mt-3 flex items-center justify-center gap-3 text-sm">
+            <span className="px-4 py-2 bg-purple-600/30 rounded-lg text-purple-200">
+              Старая коллекция: <strong>team-rating</strong>
+            </span>
+            <span className="text-purple-300">→</span>
+            <span className="px-4 py-2 bg-pink-600/30 rounded-lg text-pink-200">
+              Новая коллекция: <strong>teamRating2</strong>
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {PLAYERS.map(player => {
-            const averages = calculatePlayerAverages(player.id);
-            const overall = calculateOverallRating(averages);
-            
+            const oldAvg = calculatePlayerAverages(oldRatings, player.id);
+            const newAvg = calculatePlayerAverages(newRatings, player.id);
+
+            const oldOverall = calculateOverall(oldAvg);
+            const newOverall = calculateOverall(newAvg);
+            const overallDiff = calcDiff(newOverall, oldOverall);
+
             return (
               <div key={player.id} className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-lg rounded-3xl p-6 border-2 border-purple-400/30 shadow-2xl hover:scale-105 transition-transform">
-                {/* Header with name and overall */}
                 <div className="text-center mb-6">
                   <div className="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold text-6xl px-8 py-3 rounded-2xl shadow-lg mb-3">
-                    {overall > 0 ? overall : '-'}
+                    {newOverall > 0 ? newOverall : '-'}
                   </div>
+                  {overallDiff !== null && (
+                    <div className={`text-2xl font-bold mb-2 ${overallDiff > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {oldOverall > 0 && (
+                        <>
+                          <span className="text-purple-300">{oldOverall}</span>
+                          <span className="mx-2">→</span>
+                          <span>{newOverall}</span>
+                          <span className="ml-2">
+                            {overallDiff > 0 ? `(+${Math.abs(overallDiff)})` : `(-${Math.abs(overallDiff)})`}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
                   <h2 className="text-3xl font-bold text-white uppercase tracking-wider">{player.name}</h2>
                 </div>
 
-                {/* Stats */}
                 <div className="space-y-2 mb-6">
                   {CATEGORIES.map(cat => {
-                    const value = averages[cat.key];
+                    const oldVal = oldAvg[cat.key];
+                    const newVal = newAvg[cat.key];
+                    const diff = calcDiff(newVal, oldVal);
+
+                    const displayNew = newVal > 0 ? newVal : '-';
+                    const colorClass =
+                      newVal >= 90 ? 'text-blue-400' :
+                      newVal >= 80 ? 'text-green-400' :
+                      newVal >= 70 ? 'text-yellow-400' :
+                      newVal >= 60 ? 'text-orange-400' :
+                      newVal > 0 ? 'text-red-400' : 'text-gray-400';
+
                     return (
                       <div key={cat.key} className="flex items-center justify-between bg-white/10 rounded-lg px-4 py-2 hover:bg-white/20 transition-colors">
                         <span className="text-purple-200 text-sm font-medium">{cat.ru}</span>
-                        <span className={`text-lg font-bold ${
-                          value >= 90 ? 'text-blue-400' :
-                          value >= 80 ? 'text-green-400' :
-                          value >= 70 ? 'text-yellow-400' :
-                          value >= 60 ? 'text-orange-400' :
-                          value > 0 ? 'text-red-400' : 'text-gray-400'
-                        }`}>
-                          {value > 0 ? value : '-'}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {diff !== null && oldVal > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-purple-300">{oldVal}</span>
+                              <span className="text-xs text-purple-300">→</span>
+                              <span className={`text-lg font-bold ${colorClass}`}>
+                                {displayNew}
+                              </span>
+                              <span className={`text-xs font-bold px-2 py-1 rounded ${diff > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                {diff > 0 ? `+${Math.abs(diff)}` : `-${Math.abs(diff)}`}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className={`text-lg font-bold ${colorClass}`}>
+                              {displayNew}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Overall Rating Label */}
                 <div className="text-center pt-4 border-t-2 border-purple-400/30">
-                  <p className="text-purple-300 text-sm font-semibold">Общий рейтинг</p>
-                  <p className="text-white text-xl font-bold">{overall > 0 ? overall : 'Нет данных'}</p>
+                  <p className="text-purple-300 text-sm font-semibold mb-1">Общий рейтинг</p>
+                  <p className="text-white text-2xl font-bold">
+                    {newOverall > 0 ? newOverall : 'Нет данных'}
+                  </p>
+                  {overallDiff !== null && oldOverall > 0 && (
+                    <p className={`text-sm font-semibold mt-1 ${overallDiff > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      Изменение: {overallDiff > 0 ? `+${Math.abs(overallDiff)}` : `-${Math.abs(overallDiff)}`}
+                    </p>
+                  )}
                 </div>
               </div>
             );
