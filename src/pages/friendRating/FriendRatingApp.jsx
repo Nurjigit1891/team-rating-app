@@ -31,14 +31,15 @@ const CATEGORIES = [
   { en: 'Headers', ru: 'Игра головой', key: 'headers' },
   { en: 'Free Kicks', ru: 'Штрафные удары', key: 'freekicks' },
   { en: 'Penalties', ru: 'Пенальти', key: 'penalties' },
+  { en: 'GaolKeeping', ru: 'Навыки вратаря', key: 'goalkeeping' },
 ];
 
 const PLAYERS = [
-  {id: 1, name: "Бексултан", photo: bekaPhoto},
-  {id: 2, name: "Ислам", photo: islamPhoto},
-  {id: 3, name: "Нурдан", photo: nurdanPhoto},
-  {id: 4, name: "Нурсултан", photo: nursiPhoto},
-  {id: 5, name: "Нуржигит", photo: nurbaPhoto},
+  { id: 1, name: "Бексултан", photo: bekaPhoto },
+  { id: 2, name: "Ислам", photo: islamPhoto },
+  { id: 3, name: "Нурдан", photo: nurdanPhoto },
+  { id: 4, name: "Нурсултан", photo: nursiPhoto },
+  { id: 5, name: "Нуржигит", photo: nurbaPhoto },
 
 ];
 
@@ -50,6 +51,12 @@ export default function FriendRatingApp() {
   const [ratings, setRatings] = useState({});
   const [currentValue, setCurrentValue] = useState(75);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const cleanRatings = () => {
+    localStorage.removeItem('teamRatings');
+    window.location.reload();
+  }
+
 
   useEffect(() => {
     const saved = localStorage.getItem('teamRatings');
@@ -76,6 +83,7 @@ export default function FriendRatingApp() {
   const handleStartName = () => {
     if (userName.trim()) {
       setStage('categories');
+
     }
   };
 
@@ -95,7 +103,7 @@ export default function FriendRatingApp() {
   const saveCurrentRating = () => {
     const category = CATEGORIES[currentCategory].key;
     const player = PLAYERS[currentPlayer].id;
-    
+
     setRatings(prev => ({
       ...prev,
       [category]: {
@@ -122,35 +130,35 @@ export default function FriendRatingApp() {
   const handleFinishCategory = async () => {
     saveCurrentRating();
     setIsSubmitting(true);
-    
+
     // Отправляем данные в Firebase
     try {
       const category = CATEGORIES[currentCategory].key;
       const categoryRatings = ratings[category] || {};
-      
+
       // Добавляем текущую оценку
       categoryRatings[PLAYERS[currentPlayer].id] = currentValue;
-      
-      await addDoc(collection(db, 'ratings'), {
+
+      await addDoc(collection(db, 'teamRatings2'), {
         userName: userName,
         category: category,
         ratings: categoryRatings,
         timestamp: serverTimestamp(),
         completedAt: new Date().toISOString()
       });
-      
+
       console.log('✅ Данные отправлены в Firebase!');
-      
+
       // Небольшая задержка для показа успеха
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
     } catch (error) {
       console.error('❌ Ошибка отправки в Firebase:', error);
       alert('Ошибка сохранения данных. Проверь консоль.');
     } finally {
       setIsSubmitting(false);
     }
-    
+
     setStage('categories');
     setCurrentPlayer(0);
   };
@@ -177,7 +185,7 @@ export default function FriendRatingApp() {
         <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
           <h1 className="text-4xl font-bold text-white mb-2 text-center">Team Rating</h1>
           <p className="text-purple-200 text-center mb-8">Оцени игроков своей команды</p>
-          
+
           <input
             type="text"
             value={userName}
@@ -186,7 +194,7 @@ export default function FriendRatingApp() {
             placeholder="Введи своё имя / Enter your name"
             className="w-full px-6 py-4 rounded-xl bg-white/10 border-2 border-white/20 text-white placeholder-white/50 text-lg focus:outline-none focus:border-purple-400 transition-all"
           />
-          
+
           <button
             onClick={handleStartName}
             disabled={!userName.trim()}
@@ -205,7 +213,17 @@ export default function FriendRatingApp() {
         <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-2xl w-full border border-white/20 shadow-2xl">
           <h2 className="text-3xl font-bold text-white mb-2 text-center">Привет, {userName}! 👋</h2>
           <p className="text-purple-200 text-center mb-8">Выбери категорию для оценки</p>
-          
+
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+            <button
+              onClick={cleanRatings}
+              className="px-5 py-2 text-red-500 font-semibold border border-red-500 rounded-lg transition-all duration-200 hover:bg-red-500 hover:text-white active:scale-95 shadow-sm hover:shadow-md"
+            >
+              Ответить заново
+            </button>
+          </div>
+
+
           <div className="grid grid-cols-2 gap-4 mb-6">
             {CATEGORIES.map((category, index) => {
               const isCompleted = isCategoryCompleted(index);
@@ -217,11 +235,10 @@ export default function FriendRatingApp() {
                     handleStartCategory();
                   }}
                   disabled={isCompleted}
-                  className={`p-6 rounded-xl font-semibold text-lg transition-all ${
-                    isCompleted
-                      ? 'bg-green-500/20 border-2 border-green-400 text-green-300 cursor-not-allowed opacity-60'
-                      : 'bg-white/10 border-2 border-white/20 text-white hover:bg-white/20 transform hover:scale-105'
-                  }`}
+                  className={`p-6 rounded-xl font-semibold text-lg transition-all ${isCompleted
+                    ? 'bg-green-500/20 border-2 border-green-400 text-green-300 cursor-not-allowed opacity-60'
+                    : 'bg-white/10 border-2 border-white/20 text-white hover:bg-white/20 transform hover:scale-105'
+                    }`}
                 >
                   <div className="text-sm opacity-80">{category.en}</div>
                   <div className="text-xl">{category.ru}</div>
@@ -263,8 +280,8 @@ export default function FriendRatingApp() {
           </div>
 
           <div className="mb-6">
-            <img 
-              src={player.photo} 
+            <img
+              src={player.photo}
               alt={player.name}
               className="w-48 h-60 object-cover rounded-2xl mx-auto shadow-xl border-4 border-white/20"
             />
@@ -312,7 +329,7 @@ export default function FriendRatingApp() {
                 ← Назад
               </button>
             )}
-            
+
             {!isLast ? (
               <button
                 onClick={handleNext}
